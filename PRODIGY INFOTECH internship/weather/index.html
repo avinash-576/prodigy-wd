@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: skyblue;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+        }
+        #weather-info {
+            margin-top: 20px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Weather App</h1>
+    <input type="text" id="location" placeholder="Enter location">
+    <button onclick="getWeather()">Get Weather</button>
+    <div id="weather-info"></div>
+
+    <script>
+        const apiKey = 'YOUR_API_KEY'; // Replace with your OpenWeatherMap API key
+
+        function getWeather() {
+            let location = document.getElementById('location').value;
+            if (!location) {
+                alert('Please enter a location.');
+                return;
+            }
+            
+            // Convert location to latitude & longitude using OpenWeatherMap Geocoding API
+            fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${location}&limit=1&appid=${apiKey}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        alert('Invalid location.');
+                        return;
+                    }
+
+                    let lat = data[0].lat;
+                    let lon = data[0].lon;
+
+                    // Fetch weather data from One Call API
+                    fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,hourly,alerts&appid=${apiKey}&units=metric`)
+                        .then(response => response.json())
+                        .then(weatherData => {
+                            const temp = weatherData.current.temp;
+                            const weather = weatherData.current.weather[0].description;
+
+                            document.getElementById('weather-info').innerHTML = `Temperature: ${temp}°C <br> Condition: ${weather}`;
+                        })
+                        .catch(error => alert('Error fetching weather data.'));
+                })
+                .catch(error => alert('Error fetching location data.'));
+        }
+    </script>
+</body>
+</html>
